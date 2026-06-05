@@ -40,13 +40,12 @@ services:
         condition: service_healthy
     networks:
       - internal
-    # Expose port for direct access during debugging (remove in hardened prod)
-    ports:
-      - "8080:8080"
+    # No host port mapping — API is internal only; all traffic routes through
+    # the web nginx container which proxies /api/ to http://api:8080.
 
   # ---------------------------------------------------------------------------
   # Web frontend (Vite static build served by nginx)
-  # nginx also proxies /api and /clerk-proxy to the api service
+  # nginx proxies /api/ (including /api/__clerk Clerk proxy) to the api service
   # ---------------------------------------------------------------------------
   web:
     build:

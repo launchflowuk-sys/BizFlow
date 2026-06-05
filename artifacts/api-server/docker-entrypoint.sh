@@ -7,12 +7,9 @@ echo "    PORT:     ${PORT:-8080}"
 
 # ---------------------------------------------------------------------------
 # Database migrations
-# Run drizzle-kit push to apply any pending schema changes before boot.
-# Safe to run on every startup — drizzle-kit push is idempotent.
+# Delegates to scripts/migrate.sh — idempotent, safe on every startup.
 # ---------------------------------------------------------------------------
-echo "==> Running database migrations..."
-/app/node_modules/.bin/drizzle-kit push --config /app/lib/db/drizzle.config.ts
-echo "==> Migrations complete."
+/app/scripts/migrate.sh
 
 # ---------------------------------------------------------------------------
 # Start the API server

@@ -10,14 +10,13 @@ One `git push` to `main` triggers a full build and zero-downtime redeploy.
 ```
 Internet → Coolify (Traefik) → web container (nginx :80)
                                   ├── /            → serves Vite static bundle
-                                  ├── /api/        → proxies to api:8080
-                                  └── /clerk-proxy → proxies to api:8080
+                                  └── /api/        → proxies to api:8080
+                                       └── /api/__clerk → Clerk proxy middleware
 
-                              api container (Express :8080)
+                              api container (Express :8080)  [internal only]
                                   └── runs drizzle migrations on startup
 
-                              db container (PostgreSQL :5432)
-                                  └── internal only, never exposed
+                              db container (PostgreSQL :5432) [internal only]
 ```
 
 All three services run as one **Docker Compose stack** in Coolify.  
@@ -63,7 +62,7 @@ In Coolify, open the resource → **Environment Variables** and add:
 | `CLERK_SECRET_KEY` | `sk_live_...` | From Replit Auth pane |
 | `SESSION_SECRET` | *(64-char hex string)* | `openssl rand -hex 64` |
 | `VITE_CLERK_PUBLISHABLE_KEY` | `pk_live_...` | From Replit Auth pane — **build arg** |
-| `VITE_CLERK_PROXY_URL` | `https://bizflow.yourcompany.com/clerk-proxy` | **build arg** |
+| `VITE_CLERK_PROXY_URL` | `https://bizflow.yourcompany.com/api/__clerk` | **build arg** |
 
 > **Build args vs runtime vars**: `VITE_*` variables are baked into the
 > JavaScript bundle at Vite build time, not at runtime. In Coolify, mark them
@@ -180,7 +179,7 @@ Coolify app resources rather than a single Compose stack:
    API_UPSTREAM=api.bizflow.yourcompany.com:443
    ```
    This overrides the default `api:8080` used for docker-compose and tells
-   nginx which upstream to proxy `/api/` and `/clerk-proxy/` to.
+   nginx which upstream to proxy `/api/` (including `/api/__clerk` for Clerk) to.
 4. Update the nginx proxy_pass for HTTPS upstream — you'll need to add
    `proxy_ssl_server_name on;` in `artifacts/web/nginx.conf` for TLS upstream.
 
