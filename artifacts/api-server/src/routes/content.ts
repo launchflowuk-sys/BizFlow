@@ -55,29 +55,39 @@ crud(caseStudiesTable, "case-studies");
 crud(faqsTable, "faqs");
 crud(teamMembersTable, "team");
 
+function maskSecrets(row: any) {
+  const { smtpPass: _sp, twilioAuthToken: _tat, ...safe } = row;
+  return safe;
+}
+
 // Settings — single record per tenant
 router.get("/settings", requireTenantAccess, async (req, res) => {
   try {
     const settings = await db.select().from(tenantSettingsTable).where(eq(tenantSettingsTable.tenantId, tid(req))).limit(1);
     if (!settings.length) {
       const newSettings = await db.insert(tenantSettingsTable).values({ tenantId: tid(req) }).returning();
-      res.json(newSettings[0]);
+      res.json(maskSecrets(newSettings[0]));
       return;
     }
-    res.json(settings[0]);
+    res.json(maskSecrets(settings[0]));
   } catch (err) { req.log.error(err); res.status(500).json({ error: "Internal server error" }); }
 });
 
 router.patch("/settings", requireTenantAccess, async (req, res) => {
   try {
+    const body = req.body as any;
+    // Strip out blank password/token fields so they don't overwrite stored values
+    if (!body.smtpPass) delete body.smtpPass;
+    if (!body.twilioAuthToken) delete body.twilioAuthToken;
+
     const existing = await db.select().from(tenantSettingsTable).where(eq(tenantSettingsTable.tenantId, tid(req))).limit(1);
     if (!existing.length) {
-      const newSettings = await db.insert(tenantSettingsTable).values({ ...req.body, tenantId: tid(req) }).returning();
-      res.json(newSettings[0]);
+      const newSettings = await db.insert(tenantSettingsTable).values({ ...body, tenantId: tid(req) }).returning();
+      res.json(maskSecrets(newSettings[0]));
       return;
     }
-    const updated = await db.update(tenantSettingsTable).set(req.body).where(eq(tenantSettingsTable.tenantId, tid(req))).returning();
-    res.json(updated[0]);
+    const updated = await db.update(tenantSettingsTable).set(body).where(eq(tenantSettingsTable.tenantId, tid(req))).returning();
+    res.json(maskSecrets(updated[0]));
   } catch (err) { req.log.error(err); res.status(500).json({ error: "Internal server error" }); }
 });
 

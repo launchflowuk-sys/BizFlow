@@ -38,6 +38,18 @@ export const tenantSettingsTable = pgTable("tenant_settings", {
   trustBadges: jsonb("trust_badges").$type<string[]>().default([]),
   adminNotificationEmail: text("admin_notification_email"),
   customerEmail: text("customer_email"),
+  // SMTP settings (per-tenant, used by Nodemailer)
+  smtpHost: text("smtp_host"),
+  smtpPort: integer("smtp_port").default(587),
+  smtpSecure: boolean("smtp_secure").default(false),
+  smtpUser: text("smtp_user"),
+  smtpPass: text("smtp_pass"),
+  smtpFrom: text("smtp_from"),
+  // Twilio SMS settings (per-tenant)
+  twilioAccountSid: text("twilio_account_sid"),
+  twilioAuthToken: text("twilio_auth_token"),
+  twilioFromNumber: text("twilio_from_number"),
+  adminNotificationPhone: text("admin_notification_phone"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });

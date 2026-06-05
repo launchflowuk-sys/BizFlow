@@ -9,7 +9,7 @@ import {
   useListCustomers, useGetCustomer,
   useListGalleryImages, useListReviews, useListCaseStudies, useListServices, useListAreas, useListFaqs, useListBlogPosts,
   useListVisualiserRequests, useListContactMessages, useListTeamMembers,
-  useGetSettings, useUpdateSettings,
+  useGetSettings, useUpdateSettings, useTestEmailSettings, useTestSmsSettings,
 } from "@workspace/api-client-react";
 import { getListLeadsQueryKey, getListQuotesQueryKey, getListProjectsQueryKey, getListQuoteItemsQueryKey, getListProjectUpdatesQueryKey } from "@workspace/api-client-react";
 import { useState } from "react";
@@ -723,25 +723,55 @@ function MessagesPage() {
 function SettingsPage() {
   const { data: settings, isLoading } = useGetSettings();
   const updateMutation = useUpdateSettings();
+  const testEmailMutation = useTestEmailSettings();
+  const testSmsMutation = useTestSmsSettings();
   const [form, setForm] = useState<any>(null);
   const [saved, setSaved] = useState(false);
+  const [smtpPass, setSmtpPass] = useState("");
+  const [twilioAuthToken, setTwilioAuthToken] = useState("");
+  const [emailTestResult, setEmailTestResult] = useState<{ ok: boolean; error?: string | null } | null>(null);
+  const [smsTestResult, setSmsTestResult] = useState<{ ok: boolean; error?: string | null } | null>(null);
+
   const s = settings as any;
   if (!form && s) setForm(s);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await updateMutation.mutateAsync({ data: form } as any);
+    const payload: any = { ...form };
+    if (smtpPass) payload.smtpPass = smtpPass;
+    else delete payload.smtpPass;
+    if (twilioAuthToken) payload.twilioAuthToken = twilioAuthToken;
+    else delete payload.twilioAuthToken;
+    await updateMutation.mutateAsync({ data: payload } as any);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
+
+  const handleTestEmail = async () => {
+    setEmailTestResult(null);
+    const result = await testEmailMutation.mutateAsync();
+    setEmailTestResult(result);
+    setTimeout(() => setEmailTestResult(null), 8000);
+  };
+
+  const handleTestSms = async () => {
+    setSmsTestResult(null);
+    const result = await testSmsMutation.mutateAsync();
+    setSmsTestResult(result);
+    setTimeout(() => setSmsTestResult(null), 8000);
+  };
+
   if (isLoading) return <div className="flex h-64 items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>;
   if (!form) return null;
+
   const field = (key: string, label: string, type = "text", hint?: string) => (
     <div key={key}>
       <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
-      <input type={type} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" value={form[key] || ""} onChange={e => setForm({ ...form, [key]: e.target.value })} />
+      <input type={type} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" value={form[key] ?? ""} onChange={e => setForm({ ...form, [key]: e.target.value })} />
       {hint && <p className="text-xs text-slate-400 mt-1">{hint}</p>}
     </div>
   );
+
   return (
     <div className="p-6 max-w-2xl">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Settings</h1>
@@ -766,9 +796,81 @@ function SettingsPage() {
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
           <h2 className="font-semibold text-slate-900">Email Notifications</h2>
-          {field("adminNotificationEmail", "Admin Notification Email", "email", "Receives emails when a lead/quote/contact form is submitted (e.g. mark@amorendering.co.uk)")}
-          {field("customerEmail", "Customer From Email", "email", "Shown to customers as your contact email (e.g. info@amorendering.co.uk)")}
+          {field("adminNotificationEmail", "Admin Notification Email", "email", "Receives emails when a lead/quote/contact form is submitted")}
+          {field("customerEmail", "Customer Confirmation Email", "email", "Shown to customers as your contact email in confirmation messages")}
         </div>
+
+        {/* ── Email (SMTP) ── */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold text-slate-900">Email Server (SMTP)</h2>
+            <p className="text-xs text-slate-500 mt-1">Connect your own mail server so notifications send directly from your domain. Each tenant uses their own independent mail server.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              {field("smtpHost", "Mail Server Host", "text", "e.g. mail.yourdomain.com or smtp.office365.com")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Port</label>
+              <input type="number" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" value={form.smtpPort ?? 587} onChange={e => setForm({ ...form, smtpPort: Number(e.target.value) })} />
+              <p className="text-xs text-slate-400 mt-1">Usually 587 (STARTTLS) or 465 (SSL)</p>
+            </div>
+            <div className="flex items-center gap-3 pt-6">
+              <input type="checkbox" id="smtpSecure" className="h-4 w-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500" checked={!!form.smtpSecure} onChange={e => setForm({ ...form, smtpSecure: e.target.checked })} />
+              <label htmlFor="smtpSecure" className="text-sm font-medium text-slate-700">Use SSL/TLS (port 465)</label>
+            </div>
+            <div>
+              {field("smtpUser", "Username / Email", "email", "Usually your full email address")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+              <input type="password" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Leave blank to keep existing" value={smtpPass} onChange={e => setSmtpPass(e.target.value)} autoComplete="new-password" />
+              <p className="text-xs text-slate-400 mt-1">Stored securely — leave blank to keep existing password</p>
+            </div>
+            <div className="col-span-2">
+              {field("smtpFrom", "From Address", "text", "e.g. Amo Rendering <info@amorendering.co.uk>")}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+            <button type="button" onClick={handleTestEmail} disabled={testEmailMutation.isPending} className="inline-flex h-9 items-center rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+              {testEmailMutation.isPending ? "Sending…" : "Send test email"}
+            </button>
+            {emailTestResult?.ok && <span className="text-sm text-green-600 font-medium">✓ Test email sent successfully</span>}
+            {emailTestResult && !emailTestResult.ok && <span className="text-sm text-red-600">{emailTestResult.error || "Failed to send"}</span>}
+          </div>
+        </div>
+
+        {/* ── SMS (Twilio) ── */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+          <div>
+            <h2 className="font-semibold text-slate-900">SMS Notifications (Twilio)</h2>
+            <p className="text-xs text-slate-500 mt-1">Get an instant text message when a new quote, contact or visualiser request comes in. Each tenant uses their own Twilio account — nothing is shared.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              {field("twilioAccountSid", "Account SID", "text", "Starts with AC — find it in your Twilio console")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Auth Token</label>
+              <input type="password" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Leave blank to keep existing" value={twilioAuthToken} onChange={e => setTwilioAuthToken(e.target.value)} autoComplete="new-password" />
+              <p className="text-xs text-slate-400 mt-1">Stored securely — leave blank to keep existing token</p>
+            </div>
+            <div>
+              {field("twilioFromNumber", "Twilio From Number", "text", "Your Twilio phone number, e.g. +447700900000")}
+            </div>
+            <div>
+              {field("adminNotificationPhone", "Your Mobile Number", "text", "Where SMS alerts are sent, e.g. +447700900123")}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+            <button type="button" onClick={handleTestSms} disabled={testSmsMutation.isPending} className="inline-flex h-9 items-center rounded-md border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50">
+              {testSmsMutation.isPending ? "Sending…" : "Send test SMS"}
+            </button>
+            {smsTestResult?.ok && <span className="text-sm text-green-600 font-medium">✓ Test SMS sent successfully</span>}
+            {smsTestResult && !smsTestResult.ok && <span className="text-sm text-red-600">{smsTestResult.error || "Failed to send"}</span>}
+          </div>
+        </div>
+
         <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
           <h2 className="font-semibold text-slate-900">Social Media</h2>
           {field("facebookUrl", "Facebook URL")}

@@ -14,6 +14,7 @@ import contactRouter from "./contact";
 import dashboardRouter from "./dashboard";
 import publicRouter from "./public";
 import usersRouter from "./users";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(contactRouter);
 router.use(dashboardRouter);
 router.use(publicRouter);
 router.use(usersRouter);
+router.use(settingsRouter);
 
 export default router;

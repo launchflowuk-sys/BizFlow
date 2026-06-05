@@ -1,53 +1,42 @@
-/**
- * Email service — provider-ready structure.
- * In development (no EMAIL_API_KEY set), logs emails to stdout.
- * Set EMAIL_PROVIDER=resend and EMAIL_API_KEY=<key> to send real emails.
- * Set EMAIL_FROM=noreply@yourdomain.com for the from address.
- */
+import nodemailer from "nodemailer";
+import { logger } from "./logger";
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  from: string;
+}
 
 export interface EmailPayload {
   to: string;
   subject: string;
   html: string;
   text?: string;
-  from?: string;
 }
 
-const DEFAULT_FROM = process.env.EMAIL_FROM || "noreply@launchflow.app";
-const IS_DEV = !process.env.EMAIL_API_KEY;
-
-async function sendViaResend(payload: EmailPayload): Promise<void> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.EMAIL_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: payload.from || DEFAULT_FROM,
-      to: [payload.to],
-      subject: payload.subject,
-      html: payload.html,
-      text: payload.text,
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${body}`);
-  }
-}
-
-export async function sendEmail(payload: EmailPayload): Promise<void> {
-  if (IS_DEV) {
-    console.log("\n📧 [EMAIL - DEV MODE - NOT SENT]");
-    console.log(`  To: ${payload.to}`);
-    console.log(`  From: ${payload.from || DEFAULT_FROM}`);
-    console.log(`  Subject: ${payload.subject}`);
-    console.log(`  Body: ${payload.text || payload.html.replace(/<[^>]+>/g, " ").trim().slice(0, 200)}`);
-    console.log("─".repeat(60) + "\n");
+export async function sendEmail(payload: EmailPayload, smtp: SmtpConfig | null | undefined): Promise<void> {
+  if (!smtp?.host || !smtp?.user || !smtp?.pass) {
+    logger.info({ to: payload.to, subject: payload.subject }, "[EMAIL - NOT CONFIGURED] Would send email");
     return;
   }
-  await sendViaResend(payload);
+
+  const transporter = nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port ?? 587,
+    secure: smtp.secure ?? false,
+    auth: { user: smtp.user, pass: smtp.pass },
+  });
+
+  await transporter.sendMail({
+    from: smtp.from || smtp.user,
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
+  });
 }
 
 export function buildQuoteRequestAdminEmail(opts: {
@@ -77,7 +66,6 @@ export function buildQuoteRequestAdminEmail(opts: {
         <tr><td style="padding:8px;font-weight:bold;background:#f5f5f5">Budget</td><td style="padding:8px">${opts.budget || "—"}</td></tr>
         <tr><td style="padding:8px;font-weight:bold;background:#f5f5f5">Notes</td><td style="padding:8px">${opts.notes || "—"}</td></tr>
       </table>
-      <p style="margin-top:16px"><a href="${process.env.APP_URL || "https://app.launchflow.app"}/dashboard/leads" style="background:#f97316;color:white;padding:10px 20px;text-decoration:none;border-radius:6px">View in Dashboard</a></p>
     `,
     text: `New quote request from ${opts.firstName} ${opts.lastName}\nEmail: ${opts.email}\nPhone: ${opts.phone}\nService: ${opts.serviceInterest}\nAddress: ${opts.address} ${opts.postcode}\nNotes: ${opts.notes}`,
   };

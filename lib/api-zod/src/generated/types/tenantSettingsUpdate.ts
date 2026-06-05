@@ -7,18 +7,42 @@
  */
 
 export interface TenantSettingsUpdate {
-  seoTitle?: string;
-  seoDescription?: string;
-  footerContent?: string;
-  privacyPolicy?: string;
-  termsContent?: string;
-  cookiePolicy?: string;
-  openingHours?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  heroHeadline?: string;
+  heroSubheadline?: string;
+  heroImageUrl?: string;
+  aboutText?: string;
+  aboutImageUrl?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  googleMapsUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
   youtubeUrl?: string;
   tiktokUrl?: string;
-  serviceAreas?: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  googleAnalyticsId?: string;
+  termsContent?: string;
+  privacyContent?: string;
+  ctaText?: string;
+  adminNotificationEmail?: string;
+  customerEmail?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+  smtpUser?: string;
+  smtpPass?: string;
+  smtpFrom?: string;
+  twilioAccountSid?: string;
+  twilioAuthToken?: string;
+  twilioFromNumber?: string;
+  adminNotificationPhone?: string;
 }

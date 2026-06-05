@@ -69,6 +69,7 @@ import type {
   ListQuotesParams,
   ListReviewsParams,
   ListServicesParams,
+  NotificationTestResult,
   PipelineData,
   PlatformStats,
   Project,
@@ -9090,6 +9091,146 @@ export const useUpdateSettings = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateSettingsMutationOptions(options));
+    }
+
+export const getTestEmailSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/test-email`
+}
+
+/**
+ * @summary Send a test email using the tenant's SMTP configuration
+ */
+export const testEmailSettings = async ( options?: RequestInit): Promise<NotificationTestResult> => {
+
+  return customFetch<NotificationTestResult>(getTestEmailSettingsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getTestEmailSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testEmailSettings>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof testEmailSettings>>, TError,void, TContext> => {
+
+const mutationKey = ['testEmailSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testEmailSettings>>, void> = () => {
+
+
+          return  testEmailSettings(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TestEmailSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof testEmailSettings>>>
+
+    export type TestEmailSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Send a test email using the tenant's SMTP configuration
+ */
+export const useTestEmailSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testEmailSettings>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof testEmailSettings>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTestEmailSettingsMutationOptions(options));
+    }
+
+export const getTestSmsSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/test-sms`
+}
+
+/**
+ * @summary Send a test SMS using the tenant's Twilio configuration
+ */
+export const testSmsSettings = async ( options?: RequestInit): Promise<NotificationTestResult> => {
+
+  return customFetch<NotificationTestResult>(getTestSmsSettingsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getTestSmsSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testSmsSettings>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof testSmsSettings>>, TError,void, TContext> => {
+
+const mutationKey = ['testSmsSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof testSmsSettings>>, void> = () => {
+
+
+          return  testSmsSettings(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TestSmsSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof testSmsSettings>>>
+
+    export type TestSmsSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Send a test SMS using the tenant's Twilio configuration
+ */
+export const useTestSmsSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof testSmsSettings>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof testSmsSettings>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getTestSmsSettingsMutationOptions(options));
     }
 
 export const getGetDashboardStatsUrl = () => {

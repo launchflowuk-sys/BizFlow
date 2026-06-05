@@ -10,19 +10,33 @@ export interface TenantSettings {
   id: number;
   tenantId: number;
   /** @nullable */
-  seoTitle?: string | null;
+  logoUrl?: string | null;
   /** @nullable */
-  seoDescription?: string | null;
+  faviconUrl?: string | null;
   /** @nullable */
-  footerContent?: string | null;
+  primaryColor?: string | null;
   /** @nullable */
-  privacyPolicy?: string | null;
+  secondaryColor?: string | null;
   /** @nullable */
-  termsContent?: string | null;
+  heroHeadline?: string | null;
   /** @nullable */
-  cookiePolicy?: string | null;
+  heroSubheadline?: string | null;
   /** @nullable */
-  openingHours?: string | null;
+  heroImageUrl?: string | null;
+  /** @nullable */
+  aboutText?: string | null;
+  /** @nullable */
+  aboutImageUrl?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  city?: string | null;
+  /** @nullable */
+  googleMapsUrl?: string | null;
   /** @nullable */
   facebookUrl?: string | null;
   /** @nullable */
@@ -35,5 +49,36 @@ export interface TenantSettings {
   youtubeUrl?: string | null;
   /** @nullable */
   tiktokUrl?: string | null;
-  serviceAreas?: string[];
+  /** @nullable */
+  seoTitle?: string | null;
+  /** @nullable */
+  seoDescription?: string | null;
+  /** @nullable */
+  googleAnalyticsId?: string | null;
+  /** @nullable */
+  termsContent?: string | null;
+  /** @nullable */
+  privacyContent?: string | null;
+  /** @nullable */
+  ctaText?: string | null;
+  /** @nullable */
+  adminNotificationEmail?: string | null;
+  /** @nullable */
+  customerEmail?: string | null;
+  /** @nullable */
+  smtpHost?: string | null;
+  /** @nullable */
+  smtpPort?: number | null;
+  /** @nullable */
+  smtpSecure?: boolean | null;
+  /** @nullable */
+  smtpUser?: string | null;
+  /** @nullable */
+  smtpFrom?: string | null;
+  /** @nullable */
+  twilioAccountSid?: string | null;
+  /** @nullable */
+  twilioFromNumber?: string | null;
+  /** @nullable */
+  adminNotificationPhone?: string | null;
 }

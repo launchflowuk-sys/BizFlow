@@ -2320,6 +2320,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/TenantSettings"
 
+  /settings/test-email:
+    post:
+      operationId: testEmailSettings
+      tags: [settings]
+      summary: Send a test email using the tenant's SMTP configuration
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationTestResult"
+
+  /settings/test-sms:
+    post:
+      operationId: testSmsSettings
+      tags: [settings]
+      summary: Send a test SMS using the tenant's Twilio configuration
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationTestResult"
+
   # ─── Dashboard ────────────────────────────────────────────────────────────
   /dashboard/stats:
     get:
@@ -2700,19 +2726,33 @@ components:
           type: integer
         tenantId:
           type: integer
-        seoTitle:
+        logoUrl:
           type: ["string", "null"]
-        seoDescription:
+        faviconUrl:
           type: ["string", "null"]
-        footerContent:
+        primaryColor:
           type: ["string", "null"]
-        privacyPolicy:
+        secondaryColor:
           type: ["string", "null"]
-        termsContent:
+        heroHeadline:
           type: ["string", "null"]
-        cookiePolicy:
+        heroSubheadline:
           type: ["string", "null"]
-        openingHours:
+        heroImageUrl:
+          type: ["string", "null"]
+        aboutText:
+          type: ["string", "null"]
+        aboutImageUrl:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        googleMapsUrl:
           type: ["string", "null"]
         facebookUrl:
           type: ["string", "null"]
@@ -2726,27 +2766,69 @@ components:
           type: ["string", "null"]
         tiktokUrl:
           type: ["string", "null"]
-        serviceAreas:
-          type: array
-          items:
-            type: string
+        seoTitle:
+          type: ["string", "null"]
+        seoDescription:
+          type: ["string", "null"]
+        googleAnalyticsId:
+          type: ["string", "null"]
+        termsContent:
+          type: ["string", "null"]
+        privacyContent:
+          type: ["string", "null"]
+        ctaText:
+          type: ["string", "null"]
+        adminNotificationEmail:
+          type: ["string", "null"]
+        customerEmail:
+          type: ["string", "null"]
+        smtpHost:
+          type: ["string", "null"]
+        smtpPort:
+          type: ["integer", "null"]
+        smtpSecure:
+          type: ["boolean", "null"]
+        smtpUser:
+          type: ["string", "null"]
+        smtpFrom:
+          type: ["string", "null"]
+        twilioAccountSid:
+          type: ["string", "null"]
+        twilioFromNumber:
+          type: ["string", "null"]
+        adminNotificationPhone:
+          type: ["string", "null"]
 
     TenantSettingsUpdate:
       type: object
       properties:
-        seoTitle:
+        logoUrl:
           type: string
-        seoDescription:
+        faviconUrl:
           type: string
-        footerContent:
+        primaryColor:
           type: string
-        privacyPolicy:
+        secondaryColor:
           type: string
-        termsContent:
+        heroHeadline:
           type: string
-        cookiePolicy:
+        heroSubheadline:
           type: string
-        openingHours:
+        heroImageUrl:
+          type: string
+        aboutText:
+          type: string
+        aboutImageUrl:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        googleMapsUrl:
           type: string
         facebookUrl:
           type: string
@@ -2760,10 +2842,51 @@ components:
           type: string
         tiktokUrl:
           type: string
-        serviceAreas:
-          type: array
-          items:
-            type: string
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        googleAnalyticsId:
+          type: string
+        termsContent:
+          type: string
+        privacyContent:
+          type: string
+        ctaText:
+          type: string
+        adminNotificationEmail:
+          type: string
+        customerEmail:
+          type: string
+        smtpHost:
+          type: string
+        smtpPort:
+          type: integer
+        smtpSecure:
+          type: boolean
+        smtpUser:
+          type: string
+        smtpPass:
+          type: string
+        smtpFrom:
+          type: string
+        twilioAccountSid:
+          type: string
+        twilioAuthToken:
+          type: string
+        twilioFromNumber:
+          type: string
+        adminNotificationPhone:
+          type: string
+
+    NotificationTestResult:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+        error:
+          type: ["string", "null"]
 
     # ─── Lead ─────────────────────────────────────────────────────────────
     Lead:

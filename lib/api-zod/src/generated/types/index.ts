@@ -58,6 +58,7 @@ export * from './listProjectsParams';
 export * from './listQuotesParams';
 export * from './listReviewsParams';
 export * from './listServicesParams';
+export * from './notificationTestResult';
 export * from './pipelineData';
 export * from './pipelineStage';
 export * from './platformStats';
