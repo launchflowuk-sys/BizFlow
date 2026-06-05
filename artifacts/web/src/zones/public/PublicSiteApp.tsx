@@ -16,6 +16,17 @@ const ALL_AREAS = [
   "Southend","Dartford","Gravesend","Chigwell","Epping","London","Essex",
 ];
 
+const AREA_IMAGES: Record<string, string> = {
+  "grays":      "/gal-monocouche-grays.webp",
+  "romford":    "/gal-romford.webp",
+  "brentwood":  "/gal-brentwood-silicone.webp",
+  "basildon":   "/gal-monocouche-basildon.webp",
+  "chelmsford": "/gal-krend-chelmsford.webp",
+  "london":     "/gal-london-silicone.webp",
+  "billericay": "/gal-pebble-billericay.webp",
+  "thurrock":   "/gal-monocouche-grays.webp",
+};
+
 const SERVICE_BA_IMAGES: Record<string, string> = {
   "silicone-render":    "/ba-silicone.webp",
   "monocouche-render":  "/ba-monocouche.webp",
@@ -987,71 +998,169 @@ function AreasPage({ tenantSlug }: { tenantSlug: string }) {
   const { data: areas, isLoading } = useListPublicAreas(tenantSlug);
   const { tenant, settings } = (siteData as any) || {};
 
+  const areaList: any[] = (areas as any[])?.length
+    ? (areas as any[])
+    : ALL_AREAS.map(a => ({
+        name: a,
+        slug: a.toLowerCase().replace(/\s+/g, '-'),
+        county: a === 'London' ? 'Greater London' : 'Essex',
+        description: `Silicone rendering, K Rend, monocouche render, EWI and pebbledash removal for properties in ${a} and nearby areas.`,
+      }));
+
+  const withPhoto = areaList.filter(a => AREA_IMAGES[(a.slug || a.name?.toLowerCase())]);
+  const withoutPhoto = areaList.filter(a => !AREA_IMAGES[(a.slug || a.name?.toLowerCase())]);
+
   return (
     <div>
       <PageSEO title="Areas We Cover | AMO Rendering — Essex & London" description="AMO Rendering covers Grays, Thurrock, Essex, London, Basildon, Romford, Chelmsford and surrounding areas. Local rendering specialists."/>
       <TopBar/>
       <SiteNav tenant={tenant} settings={settings} tenantSlug={tenantSlug}/>
-      <PageHero tenantSlug={tenantSlug} crumb="Rendering Services Across Essex & London" title="Rendering Services Across Essex & London" subtitle="AMO Rendering is based in Grays, Thurrock and serves homeowners across Essex, London and surrounding areas."/>
+      <PageHero tenantSlug={tenantSlug} crumb="Areas We Cover" title="Local Rendering Across Essex & London" subtitle="AMO Rendering is based in Grays, Thurrock. We cover Essex, Greater London and surrounding areas for all rendering services."/>
 
-      {/* Area Cards */}
+      {/* Photo area cards */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>Areas Covered</p>
-            <h2 className="text-3xl font-bold" style={{ color: TEXT }}>Local Rendering Services Where You Need Them</h2>
-            <p className="mt-4 max-w-2xl mx-auto text-sm" style={{ color: MUTED }}>Dedicated local area pages help customers find rendering services near them across Essex and London.</p>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: BLUE }}>Where We Work</p>
+            <h2 className="text-3xl font-bold" style={{ color: TEXT }}>Rendering Services Near You</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-sm leading-relaxed" style={{ color: MUTED }}>From Grays and Thurrock through Essex and into London, AMO Rendering provides specialist exterior rendering across the region.</p>
           </div>
           {isLoading ? <Spinner/> : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {((areas as any[])?.length ? (areas as any[]) : ALL_AREAS.map(a => ({ name: a, slug: a.toLowerCase(), county: a === 'London' ? 'Greater London' : 'Essex', description: `Silicone rendering, K Rend, monocouche render, EWI and pebbledash removal for properties in ${a} and nearby areas.` }))).map((a: any) => (
-                <a key={a.id || a.slug || a.name} href={`${siteBase}/areas/${a.slug || a.name?.toLowerCase()}`} className="group rounded-2xl border border-slate-200 bg-white p-6 space-y-3 hover:border-[#1F8CFF] hover:shadow-md transition-all">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg text-white" style={{ backgroundColor: BLUE }}>{(a.name || '?')[0]}</div>
-                  <h2 className="text-lg font-bold group-hover:text-[#1F8CFF] transition-colors" style={{ color: TEXT }}>Rendering in {a.name}</h2>
-                  {a.county && <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: BLUE }}>{a.county}</p>}
-                  <p className="text-xs leading-relaxed" style={{ color: MUTED }}>{a.description || `Silicone rendering, K Rend, monocouche and pebbledash removal for properties in ${a.name}.`}</p>
-                  <span className="text-xs font-semibold" style={{ color: BLUE }}>View Area →</span>
-                </a>
-              ))}
-            </div>
+            <>
+              {/* Areas with photos — tall overlay cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+                {withPhoto.map((a: any) => {
+                  const slug = a.slug || a.name?.toLowerCase();
+                  const img = AREA_IMAGES[slug];
+                  return (
+                    <a
+                      key={a.id || slug}
+                      href={`${siteBase}/areas/${slug}`}
+                      className="group relative rounded-2xl overflow-hidden flex flex-col justify-end hover:shadow-xl transition-all"
+                      style={{ height: 280 }}
+                    >
+                      <img
+                        src={img}
+                        alt={`Rendering in ${a.name}`}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      {/* gradient overlay */}
+                      <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(10,22,40,0.90) 0%, rgba(10,22,40,0.30) 55%, transparent 100%)' }}/>
+                      {/* county badge */}
+                      <div className="absolute top-3 left-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: BLUE }}>
+                          {a.county || 'Essex'}
+                        </span>
+                      </div>
+                      {/* text */}
+                      <div className="relative p-5 space-y-1">
+                        <h2 className="text-lg font-bold text-white leading-tight">Rendering in {a.name}</h2>
+                        <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{a.description || `Silicone, monocouche, K Rend and pebbledash removal in ${a.name}.`}</p>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold pt-1" style={{ color: '#8EC8FF' }}>
+                          View Area <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                        </span>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+              {/* Areas without photos — compact list cards */}
+              {withoutPhoto.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {withoutPhoto.map((a: any) => {
+                    const slug = a.slug || a.name?.toLowerCase();
+                    return (
+                      <a
+                        key={a.id || slug}
+                        href={`${siteBase}/areas/${slug}`}
+                        className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4 hover:border-[#1F8CFF] hover:shadow-md transition-all"
+                      >
+                        <div>
+                          <p className="text-sm font-bold group-hover:text-[#1F8CFF] transition-colors" style={{ color: TEXT }}>{a.name}</p>
+                          <p className="text-xs mt-0.5" style={{ color: MUTED }}>{a.county || 'Essex'}</p>
+                        </div>
+                        <svg className="w-4 h-4 flex-shrink-0" style={{ color: BLUE }} fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
 
-      {/* Full area list */}
-      <section style={{ backgroundColor: LIGHT_BG }} className="py-14">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
-          <h2 className="text-2xl font-bold" style={{ color: TEXT }}>All Areas Covered</h2>
-          <p className="text-sm" style={{ color: MUTED }}>AMO Rendering regularly serves these towns and areas across Essex and Greater London.</p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {ALL_AREAS.map(a => (
-              <a key={a} href={`${siteBase}/areas`} className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-medium hover:border-[#1F8CFF] hover:text-[#1F8CFF] transition-colors" style={{ color: TEXT }}>{a}</a>
+      {/* Why local section — photo left, copy right */}
+      <section style={{ backgroundColor: LIGHT_BG }} className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* 2×2 mosaic */}
+          <div className="grid grid-cols-2 gap-3">
+            {["/gal-monocouche-grays.webp","/gal-romford.webp","/gal-krend-chelmsford.webp","/gal-brentwood-silicone.webp"].map((src, i) => (
+              <div key={i} className="rounded-xl overflow-hidden" style={{ height: 180 }}>
+                <img src={src} alt="AMO Rendering local work" className="w-full h-full object-cover"/>
+              </div>
             ))}
           </div>
-          <p className="text-sm" style={{ color: MUTED }}>Not listed? <a href={`${siteBase}/contact`} className="font-semibold" style={{ color: BLUE }}>Contact us to check availability.</a></p>
+          <div className="space-y-6">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: BLUE }}>Why Local Matters</p>
+            <h2 className="text-3xl font-bold" style={{ color: TEXT }}>Based in Grays, Serving the Region</h2>
+            <p className="text-sm leading-relaxed" style={{ color: MUTED }}>AMO Rendering operates from Grays, Thurrock — meaning short travel times, consistent quality and a team that understands the property types, weather conditions and rendering challenges specific to Essex and London homes.</p>
+            <ul className="space-y-4">
+              {[
+                { title: "Quick response across Essex", body: "Our Grays base puts us within easy reach of Basildon, Chelmsford, Brentwood, Romford and central London." },
+                { title: "Familiar with local property types", body: "We regularly work on 1930s semis, new-builds, commercial renders and period properties across the region." },
+                { title: "Known in the local area", body: "Reviews from Grays, Thurrock, Romford and Brentwood customers reflect a consistent standard of work." },
+              ].map(p => (
+                <li key={p.title} className="flex items-start gap-3">
+                  <div className="mt-0.5 flex-shrink-0"><CheckIcon color={BLUE}/></div>
+                  <div>
+                    <p className="text-sm font-bold" style={{ color: TEXT }}>{p.title}</p>
+                    <p className="text-xs leading-relaxed mt-0.5" style={{ color: MUTED }}>{p.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <BlueBtn href={`${siteBase}/quote`}>Get a Quote For Your Area</BlueBtn>
+          </div>
         </div>
       </section>
 
-      {/* Why local matters */}
-      <section style={{ backgroundColor: NAVY }} className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { title: "Based in Grays, Thurrock", body: "Our base means we can respond quickly to enquiries and visits across Essex and London." },
-            { title: "Locally focused", body: "We understand the property types, weather conditions and render challenges typical to Essex and London homes." },
-            { title: "Short travel times", body: "Serving the same area consistently helps us build a local reputation for quality rendering work." },
-          ].map(c => (
-            <div key={c.title} className="text-white space-y-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: BLUE }}>
-                <CheckIcon color="white"/>
-              </div>
-              <h3 className="font-bold text-lg">{c.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{c.body}</p>
+      {/* Services available everywhere */}
+      <section style={{ backgroundColor: NAVY }} className="py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: '#8EC8FF' }}>Available Across All Areas</p>
+            <h2 className="text-2xl font-bold text-white">Every Service, Wherever You Are</h2>
+            <p className="mt-3 text-sm text-slate-400 max-w-xl mx-auto">AMO Rendering offers all render systems across Essex and London — no area is limited to a single service.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {STATIC_SERVICES.map(s => (
+              <a key={s.slug} href={`${siteBase}/services/${s.slug}`} className="group rounded-xl border border-slate-700 bg-slate-800 p-4 text-center hover:border-[#1F8CFF] hover:bg-slate-700 transition-all">
+                <p className="text-sm font-semibold text-white group-hover:text-[#8EC8FF] transition-colors">{s.name}</p>
+                <p className="text-[10px] mt-1.5 text-slate-500 group-hover:text-slate-400 transition-colors">View service →</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team CTA */}
+      <section className="relative py-20 overflow-hidden">
+        <img src="/amo-team.webp" alt="AMO Rendering team" className="absolute inset-0 w-full h-full object-cover object-top"/>
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(10,22,40,0.88) 0%, rgba(10,22,40,0.60) 60%, transparent 100%)' }}/>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="max-w-lg space-y-5">
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#8EC8FF' }}>Ready To Start?</p>
+            <h2 className="text-3xl font-bold text-white">Get A Free Quote For Your Property</h2>
+            <p className="text-slate-300 text-sm leading-relaxed">Tell AMO where you are and what you need. We'll review your photos, advise on the best render system and provide a clear price.</p>
+            <div className="flex flex-wrap gap-3 pt-2">
+              <BlueBtn href={`${siteBase}/quote`}>Request A Free Quote</BlueBtn>
+              <OutlineBtn href={`${siteBase}/contact`} dark>Call Us</OutlineBtn>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      <QuoteCTASection tenantSlug={tenantSlug} phone={settings?.phone}/>
       <SiteFooter tenant={tenant} settings={settings} tenantSlug={tenantSlug}/>
       <MobileBar tenantSlug={tenantSlug} phone={settings?.phone}/>
     </div>
