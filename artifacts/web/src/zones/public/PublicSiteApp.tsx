@@ -1387,21 +1387,46 @@ function CaseStudyDetailPage({ tenantSlug, slug }: { tenantSlug: string; slug: s
 
       {isLoading ? <Spinner/> : c ? (
         <>
-          {c.heroImageUrl && <img src={c.heroImageUrl} alt={c.title} className="w-full h-72 object-cover"/>}
-          <section style={{ backgroundColor: NAVY }} className={`py-12 px-4 text-white ${c.heroImageUrl ? '' : 'pt-16'}`}>
-            <div className="max-w-4xl mx-auto space-y-3">
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <a href={`${siteBase}/case-studies`} className="hover:text-white">Case Studies</a>
-                <span>/</span><span>{c.title}</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {c.location && <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: BLUE + "30", color: "#8EC8FF" }}>{c.location}</span>}
-              </div>
-              <h1 className="text-3xl font-bold">{c.title}</h1>
-              {c.tagline && <p className="text-lg text-slate-300">{c.tagline}</p>}
-              <div className="flex flex-wrap gap-4 text-sm text-slate-400">
-                {c.clientName && <span>Client: {c.clientName}</span>}
-                {c.projectDuration && <span>Duration: {c.projectDuration}</span>}
+          <section style={{ backgroundColor: NAVY }} className="text-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                {/* Left — project info */}
+                <div className="py-14 pr-0 lg:pr-12 flex flex-col justify-center space-y-5">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <a href={`${siteBase}/case-studies`} className="hover:text-white transition-colors">Case Studies</a>
+                    <span>/</span>
+                    <span className="text-slate-300">{c.title}</span>
+                  </div>
+                  {c.location && (
+                    <span className="self-start text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: BLUE + "30", color: "#8EC8FF" }}>
+                      {c.location}
+                    </span>
+                  )}
+                  <h1 className="text-3xl sm:text-4xl font-bold leading-snug">{c.title}</h1>
+                  {c.tagline && <p className="text-lg text-slate-300">{c.tagline}</p>}
+                  <div className="flex flex-wrap gap-6 text-sm text-slate-400 pt-2 border-t border-slate-700">
+                    {c.clientName && (
+                      <div><span className="text-slate-500 text-xs uppercase tracking-wide block mb-0.5">Client</span>{c.clientName}</div>
+                    )}
+                    {c.projectDuration && (
+                      <div><span className="text-slate-500 text-xs uppercase tracking-wide block mb-0.5">Duration</span>{c.projectDuration}</div>
+                    )}
+                    {c.location && (
+                      <div><span className="text-slate-500 text-xs uppercase tracking-wide block mb-0.5">Location</span>{c.location}</div>
+                    )}
+                  </div>
+                </div>
+                {/* Right — full image, no crop */}
+                {c.heroImageUrl && (
+                  <div className="flex items-center lg:py-8">
+                    <img
+                      src={c.heroImageUrl}
+                      alt={`Before and after — ${c.title}`}
+                      className="w-full rounded-xl shadow-2xl"
+                      style={{ maxHeight: "420px", objectFit: "contain" }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </section>
