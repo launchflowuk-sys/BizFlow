@@ -1,0 +1,62 @@
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+==> LaunchFlow API — startup
+NODE_ENV: production
+PORT:     8080
+==> LaunchFlow database migration
+Schema: /app/lib/db/src/schema
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found
+/app/scripts/migrate.sh: 27: exec: /app/node_modules/.bin/drizzle-kit: not found

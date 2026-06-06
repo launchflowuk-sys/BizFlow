@@ -132,7 +132,34 @@ Set these in Coolify → Environment Variables before deploying:
 | `VITE_CLERK_PUBLISHABLE_KEY` | ✓ | From Clerk dashboard (pk_live_...) |
 | `VITE_CLERK_PROXY_URL` | optional | Leave blank unless using Clerk proxy |
 
-## 11. Full pre-deploy checklist
+## 11. Runtime CLI tools must be in `dependencies`, not `devDependencies`
+
+**Rule:** pnpm does NOT hoist devDep binaries from workspace sub-packages to root `node_modules/.bin`. Any CLI called at runtime (drizzle-kit, etc.) must live in `dependencies`.
+
+```json
+// ✗ wrong — binary never appears in /app/node_modules/.bin
+"devDependencies": { "drizzle-kit": "^0.31.10" }
+
+// ✓ correct — binary hoisted and available at runtime
+"dependencies": { "drizzle-kit": "^0.31.10" }
+```
+
+After changing, run `pnpm install` and commit updated `pnpm-lock.yaml`.
+
+## 12. Traefik labels — both http AND https routers required
+
+Declaring only `entrypoints=https` causes Traefik to return 404 for all HTTP traffic. Always add both:
+
+```yaml
+labels:
+  - "traefik.http.routers.myapp-http.entrypoints=http"
+  - "traefik.http.routers.myapp-http.middlewares=myapp-https-redirect"
+  - "traefik.http.middlewares.myapp-https-redirect.redirectscheme.scheme=https"
+  - "traefik.http.routers.myapp-https.entrypoints=https"
+  - "traefik.http.routers.myapp-https.tls=true"
+```
+
+## 13. Full pre-deploy checklist
 
 Before deploying ANY pnpm monorepo to Coolify with Docker Compose:
 
@@ -142,8 +169,9 @@ Before deploying ANY pnpm monorepo to Coolify with Docker Compose:
 - [ ] Web Dockerfile copies: `tsconfig.base.json tsconfig.json`
 - [ ] `vite.config.ts`: PORT and BASE_PATH have `?? "default"` fallbacks
 - [ ] `docker-compose.yml`: no `ports: - "80:80"` on web service
-- [ ] `docker-compose.yml`: web service has `coolify` network + Traefik labels
+- [ ] `docker-compose.yml`: web service has BOTH http and https Traefik routers
 - [ ] `docker-compose.yml`: `networks.coolify.external: true`
+- [ ] Any runtime CLI binary is in `dependencies` (not devDependencies)
 - [ ] Coolify env vars: all 4 required vars set
-- [ ] `pnpm-lock.yaml` is up to date (run `pnpm install` after any workspace.yaml changes)
+- [ ] `pnpm-lock.yaml` is up to date (run `pnpm install` after any package.json changes)
 - [ ] Local build test: `NODE_ENV=production pnpm --filter @workspace/web run build`
