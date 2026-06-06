@@ -1,3 +1,4 @@
 - [Route mounting pattern](route-mounting.md) — Express routes must NOT include /api/ prefix; it comes from app.use("/api", router) at mount time
 - [Wouter nested routing](wouter-nested-router.md) — Zone components with dynamic base paths (e.g. /site/:slug) MUST wrap their Switch in <Router base={dynamicBase}> or inner routes won't match
 - [OpenAPI-first API](openapi-route-alignment.md) — Generated client paths must exactly match route handlers; always check /api-spec/openapi.yaml when debugging 404s on API calls
+- [Coolify Docker Compose deployment](coolify-docker-compose-deployment.md) — Full checklist: slim not alpine, tsconfig copy, no port 80, Traefik labels, vite.config defaults
