@@ -6,7 +6,7 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 
 # Install pnpm via corepack
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # Copy workspace manifests first — maximises layer cache reuse
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
@@ -33,7 +33,7 @@ FROM node:24-alpine AS runtime
 WORKDIR /app
 
 # Install pnpm (needed to run drizzle-kit for migrations)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # ---- Migration tooling ----
 # Copy the full hoisted node_modules (includes drizzle-kit, drizzle-orm, pg)
