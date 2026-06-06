@@ -10,6 +10,7 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
 # Copy workspace manifests
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY tsconfig.base.json tsconfig.json ./
 
 # Copy all source packages the web app depends on
 COPY lib/ lib/
