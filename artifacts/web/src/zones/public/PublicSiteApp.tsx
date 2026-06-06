@@ -1551,8 +1551,8 @@ function ReviewsPage({ tenantSlug }: { tenantSlug: string }) {
       <SiteNav tenant={tenant} settings={settings} tenantSlug={tenantSlug}/>
 
       {/* Hero with aggregate */}
-      <section style={{ backgroundColor: NAVY }} className="py-16 px-4 text-white">
-        <div className="max-w-4xl mx-auto space-y-4">
+      <section style={{ backgroundColor: NAVY }} className="py-16 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-4">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <a href={siteBase || '/'} className="hover:text-white">AMO Rendering</a>
             <span>/</span><span>Reviews</span>
