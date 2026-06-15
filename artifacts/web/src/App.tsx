@@ -285,7 +285,8 @@ function DomainRouteGuard({ children }: { children: React.ReactNode }) {
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname.includes('.repl') ||
-    hostname.includes('.replit');
+    hostname.includes('.replit') ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(hostname); // bare IP — never a tenant domain
 
   const { data, isLoading, isError } = useResolveTenantDomain(
     { host: hostname },
