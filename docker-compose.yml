@@ -43,8 +43,8 @@ services:
 
   # ---------------------------------------------------------------------------
   # Web frontend (Vite static build served by nginx)
-  # No host port binding — Coolify's Traefik handles external traffic.
-  # Container must be on the `coolify` network so Traefik can reach it.
+  # SERVICE_FQDN_WEB_80 tells Coolify to create a public endpoint on port 80
+  # and manage all Traefik routing automatically.
   # ---------------------------------------------------------------------------
   web:
     build:
@@ -56,6 +56,8 @@ services:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:?VITE_CLERK_PUBLISHABLE_KEY is required}
         VITE_CLERK_PROXY_URL: ${VITE_CLERK_PROXY_URL:-}
     restart: unless-stopped
+    environment:
+      SERVICE_FQDN_WEB_80:
     expose:
       - "80"
     depends_on:
@@ -64,20 +66,6 @@ services:
     networks:
       - internal
       - coolify
-    labels:
-      - "traefik.enable=true"
-      # HTTP router — redirects to HTTPS
-      - "traefik.http.routers.bizflow-web-http.rule=Host(`${COOLIFY_FQDN:-localhost}`)"
-      - "traefik.http.routers.bizflow-web-http.entrypoints=http"
-      - "traefik.http.routers.bizflow-web-http.middlewares=bizflow-https-redirect"
-      - "traefik.http.middlewares.bizflow-https-redirect.redirectscheme.scheme=https"
-      # HTTPS router — serves traffic
-      - "traefik.http.routers.bizflow-web-https.rule=Host(`${COOLIFY_FQDN:-localhost}`)"
-      - "traefik.http.routers.bizflow-web-https.entrypoints=https"
-      - "traefik.http.routers.bizflow-web-https.tls=true"
-      - "traefik.http.routers.bizflow-web-https.tls.certresolver=letsencrypt"
-      - "traefik.http.services.bizflow-web.loadbalancer.server.port=80"
-      - "traefik.docker.network=coolify"
 
 volumes:
   postgres_data:
