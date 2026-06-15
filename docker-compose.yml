@@ -60,6 +60,9 @@ services:
       - "80"
     labels:
       - traefik.enable=true
+      # Tell Traefik which network to use (web is on both 'internal' and 'coolify').
+      # Without this Traefik may pick the internal network IP it cannot reach.
+      - traefik.docker.network=coolify
       # Route ALL traffic on the http entrypoint to this container.
       # Priority 1 = lowest, so any Coolify-managed routes take precedence.
       - "traefik.http.routers.launchflow-web.rule=PathPrefix(`/`)"
