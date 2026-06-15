@@ -43,8 +43,6 @@ services:
 
   # ---------------------------------------------------------------------------
   # Web frontend (Vite static build served by nginx)
-  # SERVICE_FQDN_WEB_80 tells Coolify to create a public endpoint on port 80
-  # and manage all Traefik routing automatically.
   # ---------------------------------------------------------------------------
   web:
     build:
@@ -60,6 +58,14 @@ services:
       SERVICE_FQDN_WEB_80:
     expose:
       - "80"
+    labels:
+      - traefik.enable=true
+      # Route ALL traffic on the http entrypoint to this container.
+      # Priority 1 = lowest, so any Coolify-managed routes take precedence.
+      - "traefik.http.routers.launchflow-web.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.launchflow-web.entrypoints=http"
+      - "traefik.http.routers.launchflow-web.priority=1"
+      - "traefik.http.services.launchflow-web.loadbalancer.server.port=80"
     depends_on:
       api:
         condition: service_started
