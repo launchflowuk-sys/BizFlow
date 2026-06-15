@@ -58,16 +58,6 @@ services:
       SERVICE_FQDN_WEB_80:
     ports:
       - "8888:80"
-    labels:
-      - traefik.enable=true
-      # Tell Traefik which network to use (web is on both 'internal' and 'coolify').
-      - traefik.docker.network=coolify
-      # Catch-all router (distinct name so it doesn't clash with Coolify's injected router).
-      - "traefik.http.routers.lf-catchall.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.lf-catchall.entrypoints=http,https"
-      - "traefik.http.routers.lf-catchall.priority=1"
-      - "traefik.http.routers.lf-catchall.service=lf-catchall-svc"
-      - "traefik.http.services.lf-catchall-svc.loadbalancer.server.port=80"
     depends_on:
       api:
         condition: service_started
