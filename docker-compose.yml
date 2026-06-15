@@ -56,8 +56,8 @@ services:
     restart: unless-stopped
     environment:
       SERVICE_FQDN_WEB_80:
-    expose:
-      - "80"
+    ports:
+      - "8888:80"
     labels:
       - traefik.enable=true
       # Tell Traefik which network to use (web is on both 'internal' and 'coolify').
