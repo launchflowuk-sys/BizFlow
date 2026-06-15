@@ -54,19 +54,20 @@ services:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:?VITE_CLERK_PUBLISHABLE_KEY is required}
         VITE_CLERK_PROXY_URL: ${VITE_CLERK_PROXY_URL:-}
     restart: unless-stopped
+    environment:
+      SERVICE_FQDN_WEB_80:
     expose:
       - "80"
     labels:
       - traefik.enable=true
       # Tell Traefik which network to use (web is on both 'internal' and 'coolify').
-      # Without this Traefik may pick the internal network IP it cannot reach.
       - traefik.docker.network=coolify
-      # Catch-all: route every request on http and https to this container.
-      - "traefik.http.routers.launchflow-web.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.launchflow-web.entrypoints=http,https"
-      - "traefik.http.routers.launchflow-web.priority=1"
-      - "traefik.http.routers.launchflow-web.service=launchflow-web"
-      - "traefik.http.services.launchflow-web.loadbalancer.server.port=80"
+      # Catch-all router (distinct name so it doesn't clash with Coolify's injected router).
+      - "traefik.http.routers.lf-catchall.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.lf-catchall.entrypoints=http,https"
+      - "traefik.http.routers.lf-catchall.priority=1"
+      - "traefik.http.routers.lf-catchall.service=lf-catchall-svc"
+      - "traefik.http.services.lf-catchall-svc.loadbalancer.server.port=80"
     depends_on:
       api:
         condition: service_started
