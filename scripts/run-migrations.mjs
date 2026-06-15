@@ -25,17 +25,18 @@ try {
   await migrate(db, { migrationsFolder });
   console.log("==> Migrations completed successfully");
 } catch (err) {
-  // Postgres error codes for objects that already exist:
-  //   42710 = duplicate_object  (CREATE TYPE ... already exists)
-  //   42P07 = duplicate_table   (CREATE TABLE ... already exists)
-  //   42701 = duplicate_column  (ALTER TABLE ADD COLUMN ... already exists)
-  // These happen when the schema was created by a previous drizzle-kit push
-  // but the drizzle migrations tracking table didn't exist yet. The schema IS
-  // in place, so this is safe to treat as success.
-  if (["42710", "42P07", "42701"].includes(err.code)) {
-    console.log(`==> Schema already exists (pg ${err.code}) — migration complete`);
+  // Drizzle-orm wraps the underlying pg error — check both err.code and
+  // err.cause?.code, and fall back to message text.
+  const pgCode = err?.code ?? err?.cause?.code;
+  const msg = String(err?.message ?? err ?? "");
+  const isAlreadyExists =
+    ["42710", "42P07", "42701"].includes(pgCode) ||
+    msg.includes("already exists");
+
+  if (isAlreadyExists) {
+    console.log(`==> Schema already exists — migration treated as complete`);
   } else {
-    console.error("==> Migration failed:", err.message);
+    console.error("==> Migration failed:", msg);
     process.exit(1);
   }
 } finally {
