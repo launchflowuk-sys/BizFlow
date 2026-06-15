@@ -24,4 +24,5 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 echo "==> LaunchFlow database migration"
 echo "    Schema: $REPO_ROOT/lib/db/src/schema"
 
+export NODE_PATH="/app/node_modules"
 exec drizzle-kit push --config "$REPO_ROOT/lib/db/drizzle.config.ts"
