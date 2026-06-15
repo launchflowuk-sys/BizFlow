@@ -5,7 +5,7 @@
 FROM node:24-slim AS builder
 WORKDIR /app
 
-# cache-bust: 2026-06-15-v3
+# cache-bust: 2026-06-15-v4
 # Install pnpm via corepack
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
@@ -19,6 +19,10 @@ COPY scripts/ scripts/
 
 # Install all workspace dependencies
 RUN pnpm install --frozen-lockfile
+
+# Generate SQL migration files from schema (no DB connection needed for generate)
+# These are copied to the runtime stage and run by scripts/run-migrations.mjs at startup
+RUN pnpm --filter @workspace/db run generate
 
 # Bundle the API server with esbuild
 RUN pnpm --filter @workspace/api-server run build
@@ -34,8 +38,8 @@ WORKDIR /app
 # Copy node_modules from builder for the API server bundle (drizzle-orm, pg, express, etc.)
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copy lib/db TypeScript source + config (drizzle-kit reads schema at startup)
-COPY --from=builder /app/lib/db ./lib/db
+# Copy lib/db migrations (pre-generated SQL files run by scripts/run-migrations.mjs)
+COPY --from=builder /app/lib/db/migrations ./lib/db/migrations
 
 # Workspace root manifests
 COPY --from=builder /app/package.json ./package.json
@@ -46,8 +50,8 @@ COPY --from=builder /app/artifacts/api-server/dist ./dist
 
 # ---- Startup + migration scripts ----
 COPY artifacts/api-server/docker-entrypoint.sh ./docker-entrypoint.sh
-COPY scripts/migrate.sh ./scripts/migrate.sh
-RUN chmod +x ./docker-entrypoint.sh ./scripts/migrate.sh
+COPY scripts/run-migrations.mjs ./scripts/run-migrations.mjs
+RUN chmod +x ./docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV PORT=8080
