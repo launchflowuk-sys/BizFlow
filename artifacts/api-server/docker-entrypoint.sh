@@ -5,17 +5,15 @@ echo "==> LaunchFlow API — startup diagnostics"
 echo "    NODE_ENV:           ${NODE_ENV:-NOT SET}"
 echo "    PORT:               ${PORT:-8080}"
 echo "    DATABASE_URL set:   $([ -n "$DATABASE_URL" ] && echo YES || echo NO - MISSING)"
-echo "    drizzle-kit path:   $(which drizzle-kit 2>/dev/null || echo NOT FOUND IN PATH)"
 echo "    node version:       $(node --version)"
 
 # ---------------------------------------------------------------------------
 # Database migrations
-# Run drizzle-kit push; if it fails, log the error but don't abort startup.
-# The server will fail naturally if the schema is missing, but this prevents
-# a crash-loop that hides the real error in the logs.
+# Uses drizzle-orm migrator with pre-generated SQL files (no drizzle-kit needed
+# at runtime). Migration files were generated during the Docker build step.
 # ---------------------------------------------------------------------------
 echo "==> Running database migrations..."
-if /app/scripts/migrate.sh; then
+if node /app/scripts/run-migrations.mjs; then
   echo "==> Migrations completed"
 else
   MIGRATE_EXIT=$?
