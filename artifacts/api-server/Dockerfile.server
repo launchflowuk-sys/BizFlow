@@ -5,7 +5,7 @@
 FROM node:24-slim AS builder
 WORKDIR /app
 
-# cache-bust: 2026-06-15-v2
+# cache-bust: 2026-06-15-v3
 # Install pnpm via corepack
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
@@ -29,12 +29,6 @@ RUN pnpm --filter @workspace/api-server run build
 # =============================================================================
 FROM node:24-slim AS runtime
 WORKDIR /app
-
-# ---- Migration tooling ----
-# Install drizzle-kit globally via npm so the binary is at /usr/local/bin/drizzle-kit.
-# We do NOT rely on pnpm workspace symlinks here — they are baked with the
-# builder's absolute paths (/home/runner/workspace/...) and break in Docker.
-RUN npm install -g drizzle-kit@0.31.10
 
 # ---- Runtime dependencies ----
 # Copy node_modules from builder for the API server bundle (drizzle-orm, pg, express, etc.)
