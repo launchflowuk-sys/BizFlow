@@ -54,8 +54,6 @@ services:
         VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:?VITE_CLERK_PUBLISHABLE_KEY is required}
         VITE_CLERK_PROXY_URL: ${VITE_CLERK_PROXY_URL:-}
     restart: unless-stopped
-    environment:
-      SERVICE_FQDN_WEB_80:
     expose:
       - "80"
     labels:
@@ -63,10 +61,9 @@ services:
       # Tell Traefik which network to use (web is on both 'internal' and 'coolify').
       # Without this Traefik may pick the internal network IP it cannot reach.
       - traefik.docker.network=coolify
-      # Route ALL traffic on the http entrypoint to this container.
-      # Priority 1 = lowest, so any Coolify-managed routes take precedence.
+      # Catch-all: route every request on http and https to this container.
       - "traefik.http.routers.launchflow-web.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.launchflow-web.entrypoints=http"
+      - "traefik.http.routers.launchflow-web.entrypoints=http,https"
       - "traefik.http.routers.launchflow-web.priority=1"
       - "traefik.http.routers.launchflow-web.service=launchflow-web"
       - "traefik.http.services.launchflow-web.loadbalancer.server.port=80"
