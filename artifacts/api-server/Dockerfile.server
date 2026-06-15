@@ -5,7 +5,7 @@
 FROM node:24-slim AS builder
 WORKDIR /app
 
-# cache-bust: 2026-06-15
+# cache-bust: 2026-06-15-v2
 # Install pnpm via corepack
 RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 
