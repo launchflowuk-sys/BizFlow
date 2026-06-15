@@ -1,0 +1,311 @@
+2026-Jun-15 13:38:17.648156 Docker 29.5.1 with BuildKit and Buildx detected on deployment server (localhost).
+2026-Jun-15 13:38:17.653755 Starting deployment of BizFlow Production to localhost.
+2026-Jun-15 13:38:17.795470 Preparing container with helper image: ghcr.io/coollabsio/coolify-helper:1.0.14
+2026-Jun-15 13:38:17.877569 [DEBUG] [CMD]: docker stop --time=30 o1214y1ba5hhq5enitesu3fr
+2026-Jun-15 13:38:17.877569 [DEBUG] Flag --time has been deprecated, use --timeout instead
+2026-Jun-15 13:38:17.880296 [DEBUG] Error response from daemon: No such container: o1214y1ba5hhq5enitesu3fr
+2026-Jun-15 13:38:17.997624 [DEBUG] [CMD]: docker run -d --network 'coolify' --name o1214y1ba5hhq5enitesu3fr  --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/coollabsio/coolify-helper:1.0.14
+2026-Jun-15 13:38:17.997624 [DEBUG] b240e27ba8488f3999cd3b5e097e66196080b84a2f623e6cd73242291430ca0a
+2026-Jun-15 13:38:19.829199 [DEBUG] [CMD]: docker exec o1214y1ba5hhq5enitesu3fr bash -c 'GIT_SSH_COMMAND="ssh -o ConnectTimeout=30 -p 22 -o Port=22 -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git ls-remote https://x-access-token:<REDACTED>@github.com/launchflowuk-sys/BizFlow.git refs/heads/main'
+2026-Jun-15 13:38:19.829199 [DEBUG] 48dce692bdd082f143349b49e49f3b1b97bc91b4	refs/heads/main
+2026-Jun-15 13:38:20.082073 ----------------------------------------
+2026-Jun-15 13:38:20.091596 Importing launchflowuk-sys/BizFlow:main (commit sha 48dce692bdd082f143349b49e49f3b1b97bc91b4) to /artifacts/o1214y1ba5hhq5enitesu3fr.
+2026-Jun-15 13:38:20.280720 [DEBUG] [CMD]: docker exec o1214y1ba5hhq5enitesu3fr bash -c 'git clone --depth=1 --recurse-submodules --shallow-submodules -b '\''main'\'' '\''https://x-access-token:<REDACTED>@github.com/launchflowuk-sys/BizFlow.git'\'' '\''/artifacts/o1214y1ba5hhq5enitesu3fr'\'' && cd '\''/artifacts/o1214y1ba5hhq5enitesu3fr'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git fetch --depth=1 origin '\''48dce692bdd082f143349b49e49f3b1b97bc91b4'\'' && git -c advice.detachedHead=false checkout '\''48dce692bdd082f143349b49e49f3b1b97bc91b4'\'' >/dev/null 2>&1 && cd '\''/artifacts/o1214y1ba5hhq5enitesu3fr'\'' && if [ -f .gitmodules ]; then git submodule sync && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git submodule update --init --recursive --depth=1; fi && cd '\''/artifacts/o1214y1ba5hhq5enitesu3fr'\'' && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" git lfs pull'
+2026-Jun-15 13:38:20.280720 [DEBUG] Cloning into '/artifacts/o1214y1ba5hhq5enitesu3fr'...
+2026-Jun-15 13:38:24.504107 [DEBUG] From https://github.com/launchflowuk-sys/BizFlow
+2026-Jun-15 13:<REDACTED>@10.26.1 --activate
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Copy workspace manifests first — maximises layer cache reuse
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Copy all source packages that the API server depends on
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY lib/ lib/
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY artifacts/api-server/ artifacts/api-server/
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY scripts/ scripts/
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Install all workspace dependencies
+2026-Jun-15 13:38:30.277907 [DEBUG] RUN pnpm install --frozen-lockfile
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Bundle the API server with esbuild
+2026-Jun-15 13:38:30.277907 [DEBUG] RUN pnpm --filter @workspace/api-server run build
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # =============================================================================
+2026-Jun-15 13:38:30.277907 [DEBUG] # Stage 2: Runtime
+2026-Jun-15 13:38:30.277907 [DEBUG] # Slim image — only what the server and migrations need at runtime
+2026-Jun-15 13:38:30.277907 [DEBUG] # =============================================================================
+2026-Jun-15 13:38:30.277907 [DEBUG] FROM node:24-slim AS runtime
+2026-Jun-15 13:38:30.277907 [DEBUG] WORKDIR /app
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # ---- Migration tooling ----
+2026-Jun-15 13:38:30.277907 [DEBUG] # Install drizzle-kit globally via npm so the binary is at /usr/local/bin/drizzle-kit.
+2026-Jun-15 13:38:30.277907 [DEBUG] # We do NOT rely on pnpm workspace symlinks here — they are baked with the
+2026-Jun-15 13:38:30.277907 [DEBUG] # builder's absolute paths (/home/runner/workspace/...) and break in Docker.
+2026-Jun-15 13:38:30.277907 [DEBUG] RUN npm install -g drizzle-kit@0.31.10
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # ---- Runtime dependencies ----
+2026-Jun-15 13:38:30.277907 [DEBUG] # Copy node_modules from builder for the API server bundle (drizzle-orm, pg, express, etc.)
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY --from=builder /app/node_modules ./node_modules
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Copy lib/db TypeScript source + config (drizzle-kit reads schema at startup)
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY --from=builder /app/lib/db ./lib/db
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # Workspace root manifests
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY --from=builder /app/package.json ./package.json
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # ---- API server bundle ----
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY --from=builder /app/artifacts/api-server/dist ./dist
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] # ---- Startup + migration scripts ----
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY artifacts/api-server/docker-entrypoint.sh ./docker-entrypoint.sh
+2026-Jun-15 13:38:30.277907 [DEBUG] COPY scripts/migrate.sh ./scripts/migrate.sh
+2026-Jun-15 13:38:30.277907 [DEBUG] RUN chmod +x ./docker-entrypoint.sh ./scripts/migrate.sh
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] ENV NODE_ENV=production
+2026-Jun-15 13:38:30.277907 [DEBUG] ENV PORT=8080
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] EXPOSE 8080
+2026-Jun-15 13:38:30.277907 [DEBUG] 
+2026-Jun-15 13:38:30.277907 [DEBUG] HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+2026-Jun-15 13:38:30.277907 [DEBUG] CMD node -e "require('http').get('http://localhost:<REDACTED>@10.26.1 --activate
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Copy workspace manifests
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY tsconfig.base.json tsconfig.json ./
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Copy all source packages the web app depends on
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY lib/ lib/
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY artifacts/web/ artifacts/web/
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Install all workspace dependencies
+2026-Jun-15 13:38:30.709933 [DEBUG] RUN pnpm install --frozen-lockfile
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # ---------------------------------------------------------------------------
+2026-Jun-15 13:38:30.709933 [DEBUG] # Vite build-time environment variables
+2026-Jun-15 13:38:30.709933 [DEBUG] # VITE_* vars are baked into the JS bundle at build time by Vite.
+2026-Jun-15 13:38:30.709933 [DEBUG] # Pass them as Docker build args from Coolify / CI.
+2026-Jun-15 13:38:30.709933 [DEBUG] # PORT and BASE_PATH are required by vite.config.ts at config-parse time.
+2026-Jun-15 13:38:30.709933 [DEBUG] # ---------------------------------------------------------------------------
+2026-Jun-15 13:38:30.709933 [DEBUG] ARG PORT=3000
+2026-Jun-15 13:38:30.709933 [DEBUG] ARG BASE_PATH=/
+2026-Jun-15 13:38:30.709933 [DEBUG] ARG VITE_CLERK_PUBLISHABLE_KEY
+2026-Jun-15 13:38:30.709933 [DEBUG] ARG VITE_CLERK_PROXY_URL
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV PORT=$PORT
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV BASE_PATH=$BASE_PATH
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV VITE_CLERK_PROXY_URL=$VITE_CLERK_PROXY_URL
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV NODE_ENV=production
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] RUN pnpm --filter @workspace/web run build
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # =============================================================================
+2026-Jun-15 13:38:30.709933 [DEBUG] # Stage 2: Runtime — nginx serving static files
+2026-Jun-15 13:38:30.709933 [DEBUG] # =============================================================================
+2026-Jun-15 13:38:30.709933 [DEBUG] FROM nginx:1.27-alpine AS runtime
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Remove default nginx config
+2026-Jun-15 13:38:30.709933 [DEBUG] RUN rm /etc/nginx/conf.d/default.conf
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Copy nginx config template (envsubst processes it at container start)
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY artifacts/web/nginx.conf /etc/nginx/templates/app.conf.template
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # Copy the Vite build output
+2026-Jun-15 13:38:30.709933 [DEBUG] COPY --from=builder /app/artifacts/web/dist/public /usr/share/nginx/html
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] # API_UPSTREAM: hostname:port of the API service.
+2026-Jun-15 13:38:30.709933 [DEBUG] # Default matches the docker-compose service name.
+2026-Jun-15 13:38:30.709933 [DEBUG] # Override when deploying API and web as separate services.
+2026-Jun-15 13:38:30.709933 [DEBUG] ENV API_UPSTREAM=api:8080
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] EXPOSE 80
+2026-Jun-15 13:38:30.709933 [DEBUG] 
+2026-Jun-15 13:38:30.709933 [DEBUG] HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+2026-Jun-15 13:38:30.709933 [DEBUG] CMD wget -qO- http://localhost:<REDACTED>@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
+2026-Jun-15 13:38:31.872540 [DEBUG] #7 resolve docker.io/library/nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10 0.0s done
+2026-Jun-15 13:38:31.872540 [DEBUG] #7 DONE 0.0s
+2026-Jun-15 13:38:31.872540 [DEBUG] 
+2026-Jun-15 13:38:31.872540 [DEBUG] #8 [web builder 1/9] FROM docker.io/library/node:24-slim@sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203
+2026-Jun-15 13:38:31.872540 [DEBUG] #8 resolve docker.io/library/node:24-slim@sha256:2c87ef9bd3c6a3bd4b472b4bec2ce9d16354b0c574f736c476489d09f560a203 0.0s done
+2026-Jun-15 13:38:31.872540 [DEBUG] #8 DONE 0.0s
+2026-Jun-15 13:38:31.872540 [DEBUG] 
+2026-Jun-15 13:38:31.872540 [DEBUG] #9 [api internal] load build context
+2026-Jun-15 13:38:31.872540 [DEBUG] #9 transferring context: 967.13kB 0.0s done
+2026-Jun-15 13:38:31.972312 [DEBUG] #9 DONE 0.1s
+2026-Jun-15 13:38:31.975027 [DEBUG] #10 [web internal] load build context
+2026-Jun-15 13:38:31.975027 [DEBUG] #10 transferring context: 8.17MB 0.1s done
+2026-Jun-15 13:38:31.975027 [DEBUG] #10 DONE 0.1s
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #11 [web builder 4/9] COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+2026-Jun-15 13:38:31.975027 [DEBUG] #11 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #12 [web runtime 3/4] COPY artifacts/web/nginx.conf /etc/nginx/templates/app.conf.template
+2026-Jun-15 13:38:31.975027 [DEBUG] #12 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #13 [web builder 9/9] RUN pnpm --filter @workspace/web run build
+2026-Jun-15 13:38:31.975027 [DEBUG] #13 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #14 [web builder 8/9] RUN pnpm install --frozen-lockfile
+2026-Jun-15 13:38:31.975027 [DEBUG] #14 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #15 [web builder 6/9] COPY lib/ lib/
+2026-Jun-15 13:38:31.975027 [DEBUG] #15 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #16 [web builder 5/9] COPY tsconfig.base.json tsconfig.json ./
+2026-Jun-15 13:38:31.975027 [DEBUG] #16 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #17 [web builder 7/9] COPY artifacts/web/ artifacts/web/
+2026-Jun-15 13:38:31.975027 [DEBUG] #17 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #18 [web runtime 2/4] RUN rm /etc/nginx/conf.d/default.conf
+2026-Jun-15 13:38:31.975027 [DEBUG] #18 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #19 [api builder 8/9] RUN pnpm install --frozen-lockfile
+2026-Jun-15 13:38:31.975027 [DEBUG] #19 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #20 [api runtime  4/11] COPY --from=builder /app/node_modules ./node_modules
+2026-Jun-15 13:38:31.975027 [DEBUG] #20 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #21 [api builder 9/9] RUN pnpm --filter @workspace/api-server run build
+2026-Jun-15 13:38:31.975027 [DEBUG] #21 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #22 [api runtime  8/11] COPY --from=builder /app/artifacts/api-server/dist ./dist
+2026-Jun-15 13:38:31.975027 [DEBUG] #22 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #23 [api runtime  3/11] RUN npm install -g drizzle-kit@0.31.10
+2026-Jun-15 13:38:31.975027 [DEBUG] #23 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #24 [api runtime 10/11] COPY scripts/migrate.sh ./scripts/migrate.sh
+2026-Jun-15 13:38:31.975027 [DEBUG] #24 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #25 [api runtime  9/11] COPY artifacts/api-server/docker-entrypoint.sh ./docker-entrypoint.sh
+2026-Jun-15 13:38:31.975027 [DEBUG] #25 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #26 [web builder 3/9] RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
+2026-Jun-15 13:38:31.975027 [DEBUG] #26 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #27 [web builder 2/9] WORKDIR /app
+2026-Jun-15 13:38:31.975027 [DEBUG] #27 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #28 [api builder 7/9] COPY scripts/ scripts/
+2026-Jun-15 13:38:31.975027 [DEBUG] #28 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #29 [api builder 6/9] COPY artifacts/api-server/ artifacts/api-server/
+2026-Jun-15 13:38:31.975027 [DEBUG] #29 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #30 [api runtime  5/11] COPY --from=builder /app/lib/db ./lib/db
+2026-Jun-15 13:38:31.975027 [DEBUG] #30 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #31 [api runtime  7/11] COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+2026-Jun-15 13:38:31.975027 [DEBUG] #31 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #32 [api runtime  6/11] COPY --from=builder /app/package.json ./package.json
+2026-Jun-15 13:38:31.975027 [DEBUG] #32 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #33 [api builder 5/9] COPY lib/ lib/
+2026-Jun-15 13:38:31.975027 [DEBUG] #33 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #34 [api builder 4/9] COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+2026-Jun-15 13:38:31.975027 [DEBUG] #34 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #35 [api runtime 11/11] RUN chmod +x ./docker-entrypoint.sh ./scripts/migrate.sh
+2026-Jun-15 13:38:31.975027 [DEBUG] #35 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #36 [web runtime 4/4] COPY --from=builder /app/artifacts/web/dist/public /usr/share/nginx/html
+2026-Jun-15 13:38:31.975027 [DEBUG] #36 CACHED
+2026-Jun-15 13:38:31.975027 [DEBUG] 
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 [api] exporting to image
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 exporting layers done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 exporting manifest sha256:b215fdfd6be9eb9031a40dd5af9de8ee4b3ade0a15c9ea1427560c18de6d1bd7 done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 exporting config sha256:cd4a3e887ab9a4fe9ce5ad70e99350026c3bf8b9488483199d344fda97871b02 done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 exporting attestation manifest sha256:807c42249537d1e3a8499eb82fe2594adc300a951660a907945b81b363d0834a 0.0s done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 exporting manifest list sha256:ea1c58d87c3ed0148202d0a820c8f1536de35ec354e7e365a65012f0d3844086 done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 naming to docker.io/library/rezjlq13rjuptwy8ydgaatjj_api:48dce692bdd082f143349b49e49f3b1b97bc91b4 done
+2026-Jun-15 13:38:31.975027 [DEBUG] #37 unpacking to docker.io/library/rezjlq13rjuptwy8ydgaatjj_api:48dce692bdd082f143349b49e49f3b1b97bc91b4
+2026-Jun-15 13:38:32.157275 [DEBUG] #37 unpacking to docker.io/library/rezjlq13rjuptwy8ydgaatjj_api:48dce692bdd082f143349b49e49f3b1b97bc91b4 0.0s done
+2026-Jun-15 13:38:32.157275 [DEBUG] #37 DONE 0.1s
+2026-Jun-15 13:38:32.157275 [DEBUG] 
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 [web] exporting to image
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 exporting layers done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 exporting manifest sha256:aa53ffc85c60b498bab0c6282d7c954a920bc3113666f8e7418609c955cbda85 done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 exporting config sha256:ffa9454380f03c32525105bf2db20c451a2f973067342812552496e350fc940e done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 exporting attestation manifest sha256:02d00261001727e6b284cb1c86fb5520eb44dbd55b0e5c0ca10e85c8de29e9b2 0.0s done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 exporting manifest list sha256:edf812e38a6da2fe1f500b8916683c53dc8c8d10f1e86b01bf8e660c8f6f2d5b done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 naming to docker.io/library/rezjlq13rjuptwy8ydgaatjj_web:48dce692bdd082f143349b49e49f3b1b97bc91b4 done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 unpacking to docker.io/library/rezjlq13rjuptwy8ydgaatjj_web:48dce692bdd082f143349b49e49f3b1b97bc91b4 0.0s done
+2026-Jun-15 13:38:32.157275 [DEBUG] #38 DONE 0.1s
+2026-Jun-15 13:38:32.157275 [DEBUG] 
+2026-Jun-15 13:38:32.157275 [DEBUG] #39 [web] resolving provenance for metadata file
+2026-Jun-15 13:38:32.181845 [DEBUG] #39 DONE 0.0s
+2026-Jun-15 13:38:32.181845 [DEBUG] 
+2026-Jun-15 13:38:32.181845 [DEBUG] #40 [api] resolving provenance for metadata file
+2026-Jun-15 13:38:32.181845 [DEBUG] #40 DONE 0.0s
+2026-Jun-15 13:38:32.184247 [DEBUG] api  Built
+2026-Jun-15 13:38:32.184247 [DEBUG] web  Built
+2026-Jun-15 13:38:32.211376 [DEBUG] Creating .env file with runtime variables for container.
+2026-Jun-15 13:38:32.445007 Removing old containers.
+2026-Jun-15 13:38:32.678375 [DEBUG] [CMD]: docker stop --time=30 web-rezjlq13rjuptwy8ydgaatjj-133638864480
+2026-Jun-15 13:38:32.678375 [DEBUG] Flag --time has been deprecated, use --timeout instead
+2026-Jun-15 13:38:32.681671 [DEBUG] web-rezjlq13rjuptwy8ydgaatjj-133638864480
+2026-Jun-15 13:38:32.855930 [DEBUG] [CMD]: docker rm -f web-rezjlq13rjuptwy8ydgaatjj-133638864480
+2026-Jun-15 13:38:32.855930 [DEBUG] web-rezjlq13rjuptwy8ydgaatjj-133638864480
+2026-Jun-15 13:38:32.974704 [DEBUG] [CMD]: docker stop --time=30 api-rezjlq13rjuptwy8ydgaatjj-133638855349
+2026-Jun-15 13:38:32.974704 [DEBUG] Flag --time has been deprecated, use --timeout instead
+2026-Jun-15 13:38:32.980604 [DEBUG] api-rezjlq13rjuptwy8ydgaatjj-133638855349
+2026-Jun-15 13:38:33.160161 [DEBUG] [CMD]: docker rm -f api-rezjlq13rjuptwy8ydgaatjj-133638855349
+2026-Jun-15 13:38:33.160161 [DEBUG] api-rezjlq13rjuptwy8ydgaatjj-133638855349
+2026-Jun-15 13:38:33.275082 [DEBUG] [CMD]: docker stop --time=30 db-rezjlq13rjuptwy8ydgaatjj-133638843687
+2026-Jun-15 13:38:33.275082 [DEBUG] Flag --time has been deprecated, use --timeout instead
+2026-Jun-15 13:38:33.555932 [DEBUG] db-rezjlq13rjuptwy8ydgaatjj-133638843687
+2026-Jun-15 13:38:33.692188 [DEBUG] [CMD]: docker rm -f db-rezjlq13rjuptwy8ydgaatjj-133638843687
+2026-Jun-15 13:38:33.692188 [DEBUG] db-rezjlq13rjuptwy8ydgaatjj-133638843687
+2026-Jun-15 13:38:33.697277 Starting new application.
+2026-Jun-15 13:38:33.893395 [DEBUG] [CMD]: docker exec o1214y1ba5hhq5enitesu3fr bash -c 'COOLIFY_BRANCH=main COOLIFY_RESOURCE_UUID=rezjlq13rjuptwy8ydgaatjj  docker compose --env-file /artifacts/o1214y1ba5hhq5enitesu3fr/.env --project-name rezjlq13rjuptwy8ydgaatjj --project-directory /artifacts/o1214y1ba5hhq5enitesu3fr -f /artifacts/o1214y1ba5hhq5enitesu3fr/docker-compose.yml up -d'
+2026-Jun-15 13:38:34.166876 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Creating
+2026-Jun-15 13:38:34.217361 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Created
+2026-Jun-15 13:38:34.217361 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Creating
+2026-Jun-15 13:38:34.246938 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Created
+2026-Jun-15 13:38:34.249468 Container web-rezjlq13rjuptwy8ydgaatjj-133829819194  Creating
+2026-Jun-15 13:38:34.277390 Container web-rezjlq13rjuptwy8ydgaatjj-133829819194  Created
+2026-Jun-15 13:38:34.288219 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Starting
+2026-Jun-15 13:38:34.448401 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Started
+2026-Jun-15 13:38:34.448401 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Waiting
+2026-Jun-15 13:38:44.950515 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Healthy
+2026-Jun-15 13:38:44.950515 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Starting
+2026-Jun-15 13:38:45.170506 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Started
+2026-Jun-15 13:38:45.170506 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Waiting
+2026-Jun-15 13:38:45.688246 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Error
+2026-Jun-15 13:38:45.692487 dependency failed to start: container api-rezjlq13rjuptwy8ydgaatjj-133829813902 is unhealthy
+2026-Jun-15 13:38:45.706300 exit status 1
+2026-Jun-15 13:38:45.762514 ========================================
+2026-Jun-15 13:38:45.769666 Deployment failed: Command execution failed (exit code 1): docker exec o1214y1ba5hhq5enitesu3fr bash -c 'COOLIFY_BRANCH=main COOLIFY_RESOURCE_UUID=rezjlq13rjuptwy8ydgaatjj  docker compose --env-file /artifacts/o1214y1ba5hhq5enitesu3fr/.env --project-name rezjlq13rjuptwy8ydgaatjj --project-directory /artifacts/o1214y1ba5hhq5enitesu3fr -f /artifacts/o1214y1ba5hhq5enitesu3fr/docker-compose.yml up -d'
+2026-Jun-15 13:38:45.769666 Error:  Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Creating
+2026-Jun-15 13:38:45.769666 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Created
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Creating
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Created
+2026-Jun-15 13:38:45.769666 Container web-rezjlq13rjuptwy8ydgaatjj-133829819194  Creating
+2026-Jun-15 13:38:45.769666 Container web-rezjlq13rjuptwy8ydgaatjj-133829819194  Created
+2026-Jun-15 13:38:45.769666 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Starting
+2026-Jun-15 13:38:45.769666 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Started
+2026-Jun-15 13:38:45.769666 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Waiting
+2026-Jun-15 13:38:45.769666 Container db-rezjlq13rjuptwy8ydgaatjj-133829807083  Healthy
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Starting
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Started
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Waiting
+2026-Jun-15 13:38:45.769666 Container api-rezjlq13rjuptwy8ydgaatjj-133829813902  Error
+2026-Jun-15 13:38:45.769666 dependency failed to start: container api-rezjlq13rjuptwy8ydgaatjj-133829813902 is unhealthy
+2026-Jun-15 13:38:45.769666 exit status 1
+2026-Jun-15 13:38:45.777393 [DEBUG] Error type: App\Exceptions\DeploymentException
+2026-Jun-15 13:38:45.783697 [DEBUG] Error code: 0
+2026-Jun-15 13:38:45.789821 [DEBUG] Location: /var/www/html/app/Traits/ExecuteRemoteCommand.php:242
+2026-Jun-15 13:38:45.796043 [DEBUG] Stack trace (first 5 lines):
+2026-Jun-15 13:38:45.801976 [DEBUG] #0 /var/www/html/app/Traits/ExecuteRemoteCommand.php(106): App\Jobs\ApplicationDeploymentJob->executeCommandWithProcess()
+2026-Jun-15 13:38:45.808181 [DEBUG] #1 /var/www/html/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php(275): App\Jobs\ApplicationDeploymentJob->{closure:App\Traits\ExecuteRemoteCommand::execute_remote_command():72}()
+2026-Jun-15 13:38:45.821958 [DEBUG] #2 /var/www/html/app/Traits/ExecuteRemoteCommand.php(72): Illuminate\Support\Collection->each()
+2026-Jun-15 13:38:45.832155 [DEBUG] #3 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(873): App\Jobs\ApplicationDeploymentJob->execute_remote_command()
+2026-Jun-15 13:38:45.841564 [DEBUG] #4 /var/www/html/app/Jobs/ApplicationDeploymentJob.php(496): App\Jobs\ApplicationDeploymentJob->deploy_docker_compose_buildpack()
+2026-Jun-15 13:38:45.849641 ========================================
+2026-Jun-15 13:38:46.114899 Gracefully shutting down build container: o1214y1ba5hhq5enitesu3fr
+2026-Jun-15 13:38:46.221708 [DEBUG] [CMD]: docker stop --time=30 o1214y1ba5hhq5enitesu3fr
+2026-Jun-15 13:38:46.221708 [DEBUG] Flag --time has been deprecated, use --timeout instead
+2026-Jun-15 13:38:46.356025 [DEBUG] o1214y1ba5hhq5enitesu3fr
